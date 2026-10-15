@@ -4,7 +4,7 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
   outputs =
-    { nixpkgs, ... }:
+    { self, nixpkgs, ... }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       helium = pkgs.callPackage ./package.nix { };
@@ -14,6 +14,16 @@
       };
     in
     {
+      overlays = {
+        default = final: _prev: {
+          helium = final.callPackage ./package.nix { };
+        };
+
+        pinned = final: _prev: {
+          helium = self.packages.${final.stdenv.hostPlatform.system}.helium;
+        };
+      };
+
       packages.x86_64-linux = {
         default = helium;
         inherit helium;

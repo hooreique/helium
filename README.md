@@ -27,9 +27,24 @@ nix profile install .#helium
 `inputs.helium.packages.x86_64-linux.default`를 NixOS의 `environment.systemPackages`
 또는 Home Manager의 `home.packages`에 넣으면 됩니다.
 
+오버레이를 사용하면 `pkgs.helium`으로 설치할 수 있습니다.
+
+```nix
+{
+  nixpkgs.overlays = [ inputs.helium.overlays.default ];
+  environment.systemPackages = [ pkgs.helium ];
+}
+```
+
+`overlays.default`는 `final.callPackage`로 사용하는 쪽의 패키지 세트에서 빌드합니다.
+이 flake의 `nixpkgs` 입력에 고정된 패키지를 사용하려면 `overlays.pinned`를 선택합니다.
+`pinned`는 `final.stdenv.hostPlatform.system`에 해당하는 flake 패키지를 가져옵니다.
+두 오버레이 모두 `x86_64-linux`만 지원합니다.
+
 ## 구성
 
-- `flake.nix`: `packages`와 `apps`의 `default` / `helium`, 패키지 빌드 check를 제공합니다.
+- `flake.nix`: `packages`와 `apps`의 `default` / `helium`, `overlays.default`와
+  `overlays.pinned`, 패키지 빌드 check를 제공합니다.
 - `package.nix`: 고정된 SHA-256으로 tarball을 받고, ELF 인터프리터와 라이브러리 경로를
   패치합니다. GTK 4 통합, 오디오, Wayland, 그래픽 관련 런타임 라이브러리를 연결합니다.
   Qt 통합은 제외하며, X11 라이브러리는 바이너리가 직접 링크하는 항목을 유지합니다.
